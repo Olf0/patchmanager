@@ -20,6 +20,10 @@ int main(int argc, char *argv[])
         qInfo() << Q_FUNC_INFO << "applyOnBoot is active, exiting!";
         return 0;
     }
+    if (pm.value(QStringLiteral("settings/applied"), QStringList()).toStringList().size() == 0) {
+        qInfo() << Q_FUNC_INFO << "no patches active, exiting!";
+        return 0;
+    }
 
     QScopedPointer<QGuiApplication> app(SailfishApp::application(argc, argv));
 
