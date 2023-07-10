@@ -129,6 +129,7 @@ public slots:
     bool getFailure() const;
     bool getLoaded() const;
     void resolveFailure();
+    void revertToLastGood();
     void loadRequest(bool apply);
 
     void lipstickChanged(const QString &state);
@@ -215,6 +216,10 @@ private:
 
     QSet<QString> getAppliedPatches() const;
     void setAppliedPatches(const QSet<QString> &patches);
+
+    QSet<QString> getLastGoodPatches() const;
+    void setLastGoodPatches(const QSet<QString> &patches);
+    void setKnownGood();
 
     void getVersion();
 

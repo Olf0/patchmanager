@@ -359,6 +359,21 @@ void PatchManagerObject::setAppliedPatches(const QSet<QString> &patches)
     putSettings(QStringLiteral("applied"), QStringList(patches.toList()));
 }
 
+QSet<QString> PatchManagerObject::getLastGoodPatches() const
+{
+    return getSettings(QStringLiteral("lastknowngood"), QStringList()).toStringList().toSet();
+}
+
+void PatchManagerObject::setLastGoodPatches(const QSet<QString> &patches)
+{
+    putSettings(QStringLiteral("lastknowngood"), QStringList(patches.toList()));
+}
+
+void PatchManagerObject::setKnownGood()
+{
+    setLastGoodPatches(getAppliedPatches());
+}
+
 QStringList PatchManagerObject::getMangleCandidates()
 {
     if (m_mangleCandidates.empty()) {
@@ -590,6 +605,10 @@ void PatchManagerObject::doPrepareCacheRoot()
 
     if (m_adaptor) {
         emit m_adaptor->autoApplyingFinished(success);
+    }
+
+    if (success) {
+        setLastGoodPatches(m_appliedPatches);
     }
 
     if (!success) {
@@ -1113,6 +1132,10 @@ void PatchManagerObject::process()
             }
         } else if (args[1] == QStringLiteral("--unapply-all")) {
             method = QStringLiteral("unapplyAllPatches");
+        } else if (args[1] == QStringLiteral("--save-as-good")) {
+            method = QStringLiteral("setKnownGood");
+        } else if (args[1] == QStringLiteral("--load-known-good")) {
+            method = QStringLiteral("revertToLastGood");
         } else {
             return;
         }
@@ -1562,20 +1585,30 @@ bool PatchManagerObject::getToggleServices() const
 /*!  Returns the internal failure state.  */
 bool PatchManagerObject::getFailure() const
 {
-    return m_failed;
+		return m_failed;
 }
 
 /*!  Returns the internal state whether the server thread is running. */
 bool PatchManagerObject::getLoaded() const
 {
-    return m_serverThread->isRunning();
+		return m_serverThread->isRunning();
 }
 
 /*!
-    Reset internal failure state and re-initialize.
+  Reset internal failure state and re-initialize.
 
-    \sa loadRequest()
-*/
+  \sa loadRequest()
+  */
+void PatchManagerObject::revertToLastGood()
+{
+    QSet<QString> patches = getLastGoodPatches();
+    if (!patches.empty()) {
+        m_appliedPatches = patches;
+        setAppliedPatches(patches);
+        refreshPatchList();
+    }
+}
+
 void PatchManagerObject::resolveFailure()
 {
     qDebug() << Q_FUNC_INFO;
