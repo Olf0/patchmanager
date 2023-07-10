@@ -268,24 +268,21 @@ Page {
         signal applyPatchFinished(string patchName)
         signal unapplyPatchFinished(string patchName)
 
+
         add: Transition {
-            SequentialAnimation {
-                NumberAnimation { properties: "z"; to: -1; duration: 1 }
-                NumberAnimation { properties: "opacity"; to: 0.0; duration: 1 }
-                NumberAnimation { properties: "x,y"; duration: 1 }
-                NumberAnimation { properties: "z"; to: 0; duration: 200 }
-                NumberAnimation { properties: "opacity"; from: 0.0; to: 1.0; duration: 100 }
-            }
-        }
-        remove: Transition {
             ParallelAnimation {
-                NumberAnimation { properties: "z"; to: -1; duration: 1 }
-                NumberAnimation { properties: "x"; to: 0; duration: 100 }
-                NumberAnimation { properties: "opacity"; to: 0.0; duration: 100 }
+                NumberAnimation { property: "opacity"; from: 0; to: 1.0; duration: 400 }
+                NumberAnimation { property: "scale"  ; from: 0.8; to: 1.0; duration: 400 }
             }
         }
         displaced: Transition {
-            NumberAnimation { properties: "x,y"; duration: 200 }
+            NumberAnimation { properties: "x,y"; duration: 200; easing.type: Easing.OutBounce }
+        }
+        remove: Transition {
+            ParallelAnimation {
+            NumberAnimation { property: "scale";   from: 1; to: 0; duration: 200 }
+            NumberAnimation { property: "opacity"; from: 1; to: 0; duration: 200 }
+            }
         }
 
         delegate: ListItem {
@@ -623,13 +620,17 @@ Page {
         }
 
         ViewPlaceholder {
-            enabled: view.count == 0
+            enabled: PatchManager.installedModel && (PatchManager.installedModel.count == 0)
             text: qsTranslate("", "No Patches available")
+            hintText: qsTranslate("", "Pull down to install some from the %1").arg(qsTranslate("", "Web Catalog"))
         }
         RemorsePopup { id: menuRemorse }
         VerticalScrollDecorator {}
     }
 
+    PageBusyIndicator {
+        running: PatchManager.installedModel.status == Model.Loading
+    }
 //    BusyIndicator {
 //        id: indicator
 //        running: visible
