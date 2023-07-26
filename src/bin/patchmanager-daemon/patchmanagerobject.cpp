@@ -1072,6 +1072,8 @@ QString PatchManagerObject::getRpmName(const QString &rpm) const
         \li calls the "unapply" action for all patches
     \endtable
 
+    \note this is called from \c main() via \l{https://doc.qt.io/archives/qt-5.6/qtimer.html#singleShot-prop}{QTimer::singleShot}
+
 */
 void PatchManagerObject::process()
 {
