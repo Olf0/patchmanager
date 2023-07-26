@@ -1049,7 +1049,7 @@ QString PatchManagerObject::getRpmName(const QString &rpm) const
     handle command line arguments, and maybe daemonize.
 
     If called with any other argument other than \c --daemon, call a method
-    coreesponding to the command line option on the bus and exit.
+    coresponding to the command line option on the bus and exit.
 
     Currently supported command line options are:
 
