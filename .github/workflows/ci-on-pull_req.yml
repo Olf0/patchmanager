@@ -26,7 +26,7 @@ concurrency:
 
 jobs:
   build:
-    name: Build ${{ env.ARCH }} on ${{ env.RELEASE }}
+    name: Build test recent commit for PR from ${{ github.ref_type }} ${{ github.base_ref }} to ${{ github.head_ref }}
     runs-on: ubuntu-22.04
     env:
       # Solely builds for i486 on 3.4.0, because of https://github.com/sailfishos-patches/patchmanager/pull/437#issuecomment-1615317003
@@ -49,16 +49,16 @@ jobs:
     #    path: $GITHUB_WORKSPACE/…
     #    key: cache
 
-    - name: 'Restore cache'
+    - name: Restore cache
       uses: actions/cache/restore@v3
       with:
-        path: /docker/foo
+        path: /var/lib/docker/overlay2
         key: docker-sfos_sdk-${{ env.RELEASE }}
         restore-keys: |
           docker-sfos_sdk-
           docker-
 
-    - name: Use mb2 in Docker SFOS-SDK image
+    - name: Build ${{ env.ARCH }} on ${{ env.RELEASE }}
       run: |
         set -x
         mkdir -p output/$RELEASE/$ARCH
@@ -75,7 +75,7 @@ jobs:
         name: RPM-build-results-${{ env.RELEASE }}-${{ env.ARCH }}
         path: output/
 
-    - name: 'Save cache'
+    - name: Save cache
       uses: actions/cache/save@v3
       with:
         path: /var/lib/docker/overlay2
