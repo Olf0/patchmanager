@@ -25,6 +25,7 @@ concurrency:
 
 jobs:
   build:
+    name: Build ${{ env.ARCH }} on ${{ env.RELEASE }}
     runs-on: ubuntu-22.04
     env:
       # Solely builds for i486 on 3.4.0, because of https://github.com/sailfishos-patches/patchmanager/pull/437#issuecomment-1615317003
@@ -47,7 +48,16 @@ jobs:
     #    path: $GITHUB_WORKSPACE/…
     #    key: cache
 
-    - name: Build ${{ env.ARCH }} on ${{ env.RELEASE }}
+    - name: 'Restore cache'
+      uses: actions/cache/restore@v3
+      with:
+        path: /docker/foo
+        key: docker-sfos_sdk-${{ env.RELEASE }}
+        restore-keys: |
+          docker-sfos_sdk-
+          docker-
+
+    - name: Use mb2 in Docker SFOS-SDK image
       run: |
         set -x
         mkdir -p output/$RELEASE/$ARCH
@@ -63,6 +73,12 @@ jobs:
       with:
         name: RPM-build-results-${{ env.RELEASE }}-${{ env.ARCH }}
         path: output/
+
+    - name: 'Save cache'
+      uses: actions/cache/save@v3
+      with:
+        path: /var/lib/docker/overlay2
+        key: docker-sfos_sdk-${{ env.RELEASE }}
 
 # "Create release" does not fit here, because this workflow is triggered by Pull Requests,
 # not newly set Git tags.
