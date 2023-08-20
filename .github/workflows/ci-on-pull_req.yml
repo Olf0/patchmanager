@@ -49,14 +49,11 @@ jobs:
     #    path: $GITHUB_WORKSPACE/…
     #    key: cache
 
-    - name: Restore cache
-      uses: actions/cache/restore@v3
+    - name: Cache Docker image
+      uses: ScribeMD/docker-cache@v3
       with:
-        path: /var/lib/docker/overlay2
-        key: docker-sfos_sdk-${{ env.RELEASE }}
-        restore-keys: |
-          docker-sfos_sdk-
-          docker-
+        # Without cache segmentation:  key: docker-CoderusSfosPlatfSDK
+        key: docker-CoderusSfosPlatfSDK-${{ env.RELEASE }}
 
     - name: Build ${{ env.ARCH }} on ${{ env.RELEASE }}
       run: |
@@ -74,12 +71,6 @@ jobs:
       with:
         name: RPM-build-results-${{ env.RELEASE }}-${{ env.ARCH }}
         path: output/
-
-    - name: Save cache
-      uses: actions/cache/save@v3
-      with:
-        path: /var/lib/docker/overlay2
-        key: docker-sfos_sdk-${{ env.RELEASE }}
 
 # "Create release" does not fit here, because this workflow is triggered by Pull Requests,
 # not newly set Git tags.
