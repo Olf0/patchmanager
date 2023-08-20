@@ -61,9 +61,9 @@ jobs:
 
     - name: Build ${{ env.ARCH }} on ${{ env.RELEASE }}
       run: |
-        set -x
         # Required to increase insufficient sub[ug]id ranges:
         subXid_range=100000
+        subXid_altered=false
         me="$(whoami)"
         subuid_me="$(grep "^$me:" /etc/subuid)"
         subgid_me="$(grep "^$me:" /etc/subgid)"
@@ -71,12 +71,15 @@ jobs:
         then exit 1
         fi
         if [ -n "$subXid_range" ] && [ "$subXid_range" -gt $(echo $subuid_me | cut -d : -f 3) ]
-        then sudo sed -i "s/^$subuid_me\$/$me:$(echo $subuid_me | cut -d : -f 2):$subXid_range/" /etc/subuid
+        then sudo sed -i "s/^$subuid_me\$/$me:$(echo $subuid_me | cut -d : -f 2):$subXid_range/" /etc/subuid; subXid_altered=true
         fi
         if [ -n "$subXid_range" ] && [ "$subXid_range" -gt $(echo $subgid_me | cut -d : -f 3) ]
-        then sudo sed -i "s/^$subgid_me\$/$me:$(echo $subgid_me | cut -d : -f 2):$subXid_range/" /etc/subgid
+        then sudo sed -i "s/^$subgid_me\$/$me:$(echo $subgid_me | cut -d : -f 2):$subXid_range/" /etc/subgid; subXid_altered=true
         fi
-        podman system migrate
+        if [ $subXid_altered = true ]
+        then podman system migrate
+        fi
+        set -x
         # `podman system migrate` is neccesary when subuid or subgid ranges were altered, even if `podman` has not been started before.
         podman run --rm -v $PWD:/share docker.io/coderus/sailfishos-platform-sdk:$RELEASE /bin/sh -xc '
            mkdir -p build
@@ -85,6 +88,8 @@ jobs:
            mb2 -t SailfishOS-$1-$2 build -d
            sudo cp -r RPMS/. /share/output/$1/$2/' sh_mb2 $RELEASE $ARCH
         # Note that .config/containers does not exist with Podman 3.4.4, even though it just ran.
+        sudo ls -lR ~/.local/share/containers
+        sudo chmod -Rc a+r ~/.local/share/containers/storage/
 
     - name: Upload build results
       uses: actions/upload-artifact@v3
