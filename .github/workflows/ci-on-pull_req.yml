@@ -63,17 +63,18 @@ jobs:
     - name: Build ${{ env.ARCH }} on ${{ env.RELEASE }}
       run: |
         set -x
-        sudo apt-get -q update
-        sudo apt-get -q install -y uidmap
+        id -u
+        whoami
+        grep ^$(whoami): /etc/subuid
+        grep ^$(whoami): /etc/subgid
         mkdir -p output/$RELEASE/$ARCH
         podman info
-        cat ~/.config/containers/storage.conf
-        podman run --rm -v $PWD:/share docker.io/coderus/sailfishos-platform-sdk:$RELEASE /bin/sh -xc '
-           mkdir -p build
+        podman run --rm -v $PWD:/share docker.io/coderus/sailfishos-platform-sdk:$RELEASE /bin/sh -xc '           mkdir -p build
            cd build
            cp -r /share/. .
            mb2 -t SailfishOS-$1-$2 build -d
            sudo cp -r RPMS/. /share/output/$1/$2/' sh_mb2 $RELEASE $ARCH
+        cat ~/.config/containers/storage.conf
         podman images -a
         du -hd 2 ~/.local/share/containers/storage/
 
