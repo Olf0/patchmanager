@@ -37,18 +37,6 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Prepare
-      run: mkdir -p output/$RELEASE/$ARCH
-
-    # Caching Docker images is not ready yet, see 
-    # https://github.com/storeman-developers/harbour-storeman-installer/blob/devel/cache-docker-images_github-ci.md
-    #- name: Cache Docker images of the Sailfish-SDK
-    #  id: cache-sdk
-    #  uses: actions/cache@v3
-    #  with:
-    #    path: $GITHUB_WORKSPACE/…
-    #    key: cache
-
     - name: Cache Docker image
       uses: ScribeMD/docker-cache@0.3.4
       with:
@@ -61,6 +49,7 @@ jobs:
     - name: Build ${{ env.ARCH }} on ${{ env.RELEASE }}
       run: |
         set -x
+        mkdir -p output/$RELEASE/$ARCH
         docker run --rm -v $PWD:/share coderus/sailfishos-platform-sdk:$RELEASE /bin/sh -xc '
            mkdir -p build
            cd build
