@@ -53,11 +53,11 @@ jobs:
       uses: actions/cache/restore@v3
       with:
         path: ~/.local/share/containers/storage/
-        key: docker-CoderusSailfishosPlatformSDK-${{ env.RELEASE }}
+        key: podman-CoderusSailfishosPlatformSDK-${{ env.RELEASE }}
         # Will likely create an avalanche effect, as various images and layers accumulate.
         #restore-keys: |
-        #  docker-sfos_sdk-
-        #  docker-
+        #  podman-CoderusSailfishosPlatformSDK-
+        #  podman-
 
     - name: Build ${{ env.ARCH }} on ${{ env.RELEASE }}
       run: |
@@ -91,17 +91,17 @@ jobs:
         sudo ls -lR ~/.local/share/containers
         sudo chmod -Rc a+r ~/.local/share/containers/storage/
 
+    - name: Save cache
+      uses: actions/cache/save@v3
+      with:
+        path: ~/.local/share/containers/storage/
+        key: podman-CoderusSailfishosPlatformSDK-${{ env.RELEASE }}
+
     - name: Upload build results
       uses: actions/upload-artifact@v3
       with:
         name: RPM-build-results-${{ env.RELEASE }}-${{ env.ARCH }}
         path: output/
-
-    - name: Save cache
-      uses: actions/cache/save@v3
-      with:
-        path: ~/.local/share/containers/storage/
-        key: docker-CoderusSailfishosPlatformSDK-${{ env.RELEASE }}
 
 # "Create release" does not fit here, because this workflow is triggered by Pull Requests,
 # not newly set Git tags.
