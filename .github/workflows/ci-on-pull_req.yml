@@ -62,17 +62,17 @@ jobs:
         sudo ls -lR /var/lib/docker
         sudo chmod -Rc a+r /var/lib/docker
 
-    - name: Upload build results
-      uses: actions/upload-artifact@v3
-      with:
-        name: RPM-build-results-${{ env.RELEASE }}-${{ env.ARCH }}
-        path: output/
-
     - name: Save cache
       uses: actions/cache/save@v3
       with:
         path: /var/lib/docker/overlay2/
         key: docker-CoderusSailfishosPlatformSDK-${{ env.RELEASE }}
+
+    - name: Upload build results
+      uses: actions/upload-artifact@v3
+      with:
+        name: RPM-build-results-${{ env.RELEASE }}-${{ env.ARCH }}
+        path: output/
 
 # "Create release" does not fit here, because this workflow is triggered by Pull Requests,
 # not newly set Git tags.
