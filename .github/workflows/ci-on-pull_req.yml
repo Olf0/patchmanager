@@ -52,11 +52,11 @@ jobs:
     - name: Restore cache
       uses: actions/cache/restore@v3
       with:
-        path: /var/lib/docker/overlay2
-        key: docker-sfos_sdk-${{ env.RELEASE }}
-        restore-keys: |
-          docker-sfos_sdk-
-          docker-
+        path: /var/lib/docker/overlay2/
+        key: docker-CoderusSailfishosPlatformSDK-${{ env.RELEASE }}
+        #restore-keys: |
+        #  docker-CoderusSailfishosPlatformSDK-
+        #  docker-
 
     - name: Build ${{ env.ARCH }} on ${{ env.RELEASE }}
       run: |
@@ -68,6 +68,8 @@ jobs:
            cp -r /share/. .
            mb2 -t SailfishOS-$1-$2 build -d
            sudo cp -r RPMS/. /share/output/$1/$2/' sh_mb2 $RELEASE $ARCH
+        sudo ls -lR /var/lib/docker
+        sudo chmod -Rc a+r /var/lib/docker
 
     - name: Upload build results
       uses: actions/upload-artifact@v3
@@ -78,8 +80,8 @@ jobs:
     - name: Save cache
       uses: actions/cache/save@v3
       with:
-        path: /var/lib/docker/overlay2
-        key: docker-sfos_sdk-${{ env.RELEASE }}
+        path: /var/lib/docker/overlay2/
+        key: docker-CoderusSailfishosPlatformSDK-${{ env.RELEASE }}
 
 # "Create release" does not fit here, because this workflow is triggered by Pull Requests,
 # not newly set Git tags.
