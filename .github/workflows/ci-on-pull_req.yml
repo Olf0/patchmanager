@@ -88,9 +88,3 @@ jobs:
 #        hub release create"$assets" -m "$tag_name" "$tag_name"
 #      env:
 #        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-# Just for fun, see https://feathericons.com/ and
-# https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#branding
-#branding:  # "Invalid workflow file: Unexpected value 'branding'"; maybe action MUST be located in '/' or the name MUST be action.yml, see e.g., https://github.com/actions/cache/blob/main/action.yml#L37
-#  icon: 'gift'
-#  color: 'purple'
