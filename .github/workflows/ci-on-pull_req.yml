@@ -84,7 +84,8 @@ jobs:
            sudo cp -r RPMS/. /share/output/$1/$2/' sh_mb2 $RELEASE $ARCH
         # Note that .config/containers does not exist with Podman 3.4.4, even though it just ran.
         sudo ls -lR ~/.local/share/containers
-        sudo chmod -Rc a+r ~/.local/share/containers/storage/
+        #sudo chmod -Rc a+r ~/.local/share/containers/storage
+        sudo chown -PRc $me ~/.local/share/containers/storage
 
     - name: Save cache
       uses: actions/cache/save@v3
