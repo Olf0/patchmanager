@@ -68,8 +68,8 @@ jobs:
         subuid_start="$(grep -o "^$(whoami):[0-9][0-9]*:" /etc/subuid)"
         subgid_start="$(grep -o "^$(whoami):[0-9][0-9]*:" /etc/subgid)"
         if [ $(echo "$subuid_start" | wc -l) -ne 1 ] && [ $(echo "$subgid_start" | wc -l) -ne 1 ]; then exit 1; fi
-        sed -i "s/^${subuid_start}[0-9][0-9]*\$/${subuid_start}$(($(echo $subuid_start | cut -d : -f 2)+100000))/" /etc/subuid
-        sed -i "s/^${subgid_start}[0-9][0-9]*\$/${subgid_start}$(($(echo $subgid_start | cut -d : -f 2)+100000))/" /etc/subgid
+        sudo sed -i "s/^${subuid_start}[0-9]\+\$/${subuid_start}$(($(echo $subuid_start | cut -d : -f 2)+100000))/" /etc/subuid
+        sudo sed -i "s/^${subgid_start}[0-9]\+\$/${subgid_start}$(($(echo $subgid_start | cut -d : -f 2)+100000))/" /etc/subgid
         grep ^$(whoami): /etc/subuid
         grep ^$(whoami): /etc/subgid
         podman system migrate
