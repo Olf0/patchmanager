@@ -50,7 +50,7 @@ jobs:
     #    key: cache
 
     - name: Cache Docker image
-      uses: ScribeMD/docker-cache@v0.3.4
+      uses: ScribeMD/docker-cache@0.3.4
       with:
         # Without cache segmentation:  key: docker-CoderusSfosPlatfSDK
         key: docker-CoderusSfosPlatfSDK-${{ env.RELEASE }}
@@ -67,7 +67,7 @@ jobs:
            sudo cp -r RPMS/. /share/output/$1/$2/' sh_mb2 $RELEASE $ARCH
 
     - name: Upload build results
-      uses: actions/upload-artifact@v0
+      uses: actions/upload-artifact@v3
       with:
         name: RPM-build-results-${{ env.RELEASE }}-${{ env.ARCH }}
         path: output/
