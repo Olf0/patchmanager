@@ -58,7 +58,7 @@ jobs:
            mb2 -t SailfishOS-$1-$2 build -d
            sudo cp -r RPMS/. /share/output/$1/$2/' sh_mb2 $RELEASE $ARCH
         #sudo ls -lR /var/lib/docker
-        sudo chmod -Rc "$(whoami)" /var/lib/docker
+        sudo chown -PRc "$(whoami)" /var/lib/docker
 
     - name: Save cache
       uses: actions/cache/save@v3
