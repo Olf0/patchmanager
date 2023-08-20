@@ -37,23 +37,15 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    #- name: Prepare
-    #  run:
-
-    # Caching Docker images is not ready yet, see 
-    # https://github.com/storeman-developers/harbour-storeman-installer/blob/devel/cache-docker-images_github-ci.md
-    #- name: Cache Docker images of the Sailfish-SDK
-    #  id: cache-sdk
-    #  uses: actions/cache@v3
-    #  with:
-    #    path: $GITHUB_WORKSPACE/…
-    #    key: cache
+    - name: Prepare
+      run: mkdir -p output/$RELEASE/$ARCH
 
     - name: Restore cache
       uses: actions/cache/restore@v3
       with:
         path: /var/lib/docker/overlay2/
         key: docker-CoderusSailfishosPlatformSDK-${{ env.RELEASE }}
+        # Will likely create an avalanche effect, as various images and layers accumulate.
         #restore-keys: |
         #  docker-CoderusSailfishosPlatformSDK-
         #  docker-
@@ -61,7 +53,6 @@ jobs:
     - name: Build ${{ env.ARCH }} on ${{ env.RELEASE }}
       run: |
         set -x
-        mkdir -p output/$RELEASE/$ARCH
         docker run --rm -v $PWD:/share coderus/sailfishos-platform-sdk:$RELEASE /bin/sh -xc '
            mkdir -p build
            cd build
