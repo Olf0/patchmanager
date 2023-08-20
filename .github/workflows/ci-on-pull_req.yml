@@ -63,12 +63,13 @@ jobs:
     - name: Build ${{ env.ARCH }} on ${{ env.RELEASE }}
       run: |
         set -x
-        id -u
-        whoami
+        grep ^$(whoami): /etc/subuid
+        grep ^$(whoami): /etc/subgid
+        sudo usermod --add-subuids 100000-200000 --add-subgids 100000-200000 "$(whoami)"
+        podman system migrate
         grep ^$(whoami): /etc/subuid
         grep ^$(whoami): /etc/subgid
         mkdir -p output/$RELEASE/$ARCH
-        podman info
         podman run --rm -v $PWD:/share docker.io/coderus/sailfishos-platform-sdk:$RELEASE /bin/sh -xc '           mkdir -p build
            cd build
            cp -r /share/. .
