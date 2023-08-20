@@ -37,9 +37,6 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Prepare
-      run: mkdir -p output/$RELEASE/$ARCH
-
     - name: Restore cache
       uses: actions/cache/restore@v3
       with:
@@ -53,6 +50,7 @@ jobs:
     - name: Build ${{ env.ARCH }} on ${{ env.RELEASE }}
       run: |
         set -x
+        mkdir -p output/$RELEASE/$ARCH
         docker run --rm -v $PWD:/share coderus/sailfishos-platform-sdk:$RELEASE /bin/sh -xc '
            mkdir -p build
            cd build
@@ -60,7 +58,7 @@ jobs:
            mb2 -t SailfishOS-$1-$2 build -d
            sudo cp -r RPMS/. /share/output/$1/$2/' sh_mb2 $RELEASE $ARCH
         #sudo ls -lR /var/lib/docker
-        sudo chmod -PRc "$(whoami)" /var/lib/docker
+        sudo chmod -Rc "$(whoami)" /var/lib/docker
 
     - name: Save cache
       uses: actions/cache/save@v3
