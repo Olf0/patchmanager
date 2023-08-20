@@ -37,8 +37,8 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    #- name: Prepare
-    #  run:
+    - name: Prepare
+      run: mkdir -p output/$RELEASE/$ARCH
 
     # Caching Docker images is not ready yet, see 
     # https://github.com/storeman-developers/harbour-storeman-installer/blob/devel/cache-docker-images_github-ci.md
@@ -52,13 +52,15 @@ jobs:
     - name: Cache Docker image
       uses: ScribeMD/docker-cache@0.3.4
       with:
-        # Without cache segmentation:  key: docker-CoderusSfosPlatfSDK
-        key: docker-CoderusSfosPlatfSDK-${{ env.RELEASE }}
+        key: docker-CoderusSailfishosPlatformSDK-${{ env.RELEASE }}
+        # Will likely create an avalanche effect, as various images and layers accumulate.
+        #restore-keys: |
+        #  docker-CoderusSailfishosPlatformSDK-
+        #  docker-
 
     - name: Build ${{ env.ARCH }} on ${{ env.RELEASE }}
       run: |
         set -x
-        mkdir -p output/$RELEASE/$ARCH
         docker run --rm -v $PWD:/share coderus/sailfishos-platform-sdk:$RELEASE /bin/sh -xc '
            mkdir -p build
            cd build
@@ -86,9 +88,3 @@ jobs:
 #        hub release create"$assets" -m "$tag_name" "$tag_name"
 #      env:
 #        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-# Just for fun, see https://feathericons.com/ and
-# https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#branding
-#branding:  # "Invalid workflow file: Unexpected value 'branding'"; maybe action MUST be located in '/' or the name MUST be action.yml, see e.g., https://github.com/actions/cache/blob/main/action.yml#L37
-#  icon: 'gift'
-#  color: 'purple'
