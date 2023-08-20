@@ -37,8 +37,8 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    #- name: Prepare
-    #  run:
+    - name: Prepare
+      run: mkdir -p output/$RELEASE/$ARCH
 
     # Caching Docker images is not ready yet, see 
     # https://github.com/storeman-developers/harbour-storeman-installer/blob/devel/cache-docker-images_github-ci.md
@@ -65,17 +65,21 @@ jobs:
         set -x
         # Required to increase insufficient sub[ug]id ranges:
         subXid_range=100000
-        subuid_me="$(grep "^$(whoami):" /etc/subuid)"
-        subgid_me="$(grep "^$(whoami):" /etc/subgid)"
-        if [ $(echo -n "$subuid_me" | grep -c '.*') -ne 1 ] || [ $(echo -n "$subgid_me" | grep -c '.*') -ne 1 ]; then exit 1; fi
-        subuid_usern=$(echo $subuid_me | cut -d : -f 1)
+        me="$(whoami)"
+        subuid_me="$(grep "^$me:" /etc/subuid)"
+        subgid_me="$(grep "^$me:" /etc/subgid)"
+        if [ $(echo -n "$subuid_me" | grep -c '.*') -ne 1 ] || [ $(echo -n "$subgid_me" | grep -c '.*') -ne 1 ]
+        then exit 1
+        fi
         subuid_start=$(echo $subuid_me | cut -d : -f 2)
-        subgid_usern=$(echo $subgid_me | cut -d : -f 1)
         subgid_start=$(echo $subgid_me | cut -d : -f 2)
-        sudo sed -i "s/^$subuid_me\$/$subuid_usern:$subuid_start:$(($subuid_start+$subXid_range))/" /etc/subuid
-        sudo sed -i "s/^$subgid_me\$/$subgid_usern:$subgid_start:$(($subgid_start+$subXid_range))/" /etc/subgid
-        #podman system migrate
-        mkdir -p output/$RELEASE/$ARCH
+        if [ -n "$subXid_range" ] && [ "$subXid_range" -gt $(echo $subuid_me | cut -d : -f 3) ]
+        then sudo sed -i "s/^$subuid_me\$/$me:$subuid_start:$subXid_range/" /etc/subuid
+        fi
+        if [ -n "$subXid_range" ] && [ "$subXid_range" -gt $(echo $subgid_me | cut -d : -f 3) ]
+        then sudo sed -i "s/^$subgid_me\$/$me:$subgid_start:$subXid_range/" /etc/subgid
+        fi
+        podman system migrate
         podman run --rm -v $PWD:/share docker.io/coderus/sailfishos-platform-sdk:$RELEASE /bin/sh -xc '           mkdir -p build
            cd build
            cp -r /share/. .
