@@ -52,10 +52,9 @@ jobs:
     - name: Restore cache
       uses: actions/cache/restore@v3
       with:
-        # path: ~/.local/share/containers/storage/*-layers
         path: ~/.local/share/containers/storage/
         key: docker-CoderusSailfishosPlatformSDK-${{ env.RELEASE }}
-        # Will likely create an avalanche effect, as the images and layers accumulate.
+        # Will likely create an avalanche effect, as various images and layers accumulate.
         #restore-keys: |
         #  docker-sfos_sdk-
         #  docker-
@@ -71,23 +70,21 @@ jobs:
         if [ $(echo -n "$subuid_me" | grep -c '.*') -ne 1 ] || [ $(echo -n "$subgid_me" | grep -c '.*') -ne 1 ]
         then exit 1
         fi
-        subuid_start=$(echo $subuid_me | cut -d : -f 2)
-        subgid_start=$(echo $subgid_me | cut -d : -f 2)
         if [ -n "$subXid_range" ] && [ "$subXid_range" -gt $(echo $subuid_me | cut -d : -f 3) ]
-        then sudo sed -i "s/^$subuid_me\$/$me:$subuid_start:$subXid_range/" /etc/subuid
+        then sudo sed -i "s/^$subuid_me\$/$me:$(echo $subuid_me | cut -d : -f 2):$subXid_range/" /etc/subuid
         fi
         if [ -n "$subXid_range" ] && [ "$subXid_range" -gt $(echo $subgid_me | cut -d : -f 3) ]
-        then sudo sed -i "s/^$subgid_me\$/$me:$subgid_start:$subXid_range/" /etc/subgid
+        then sudo sed -i "s/^$subgid_me\$/$me:$(echo $subgid_me | cut -d : -f 2):$subXid_range/" /etc/subgid
         fi
         podman system migrate
-        podman run --rm -v $PWD:/share docker.io/coderus/sailfishos-platform-sdk:$RELEASE /bin/sh -xc '           mkdir -p build
+        # `podman system migrate` is neccesary when subuid or subgid ranges were altered, even if `podman` has not been started before.
+        podman run --rm -v $PWD:/share docker.io/coderus/sailfishos-platform-sdk:$RELEASE /bin/sh -xc '
+           mkdir -p build
            cd build
            cp -r /share/. .
            mb2 -t SailfishOS-$1-$2 build -d
            sudo cp -r RPMS/. /share/output/$1/$2/' sh_mb2 $RELEASE $ARCH
-        [ -d .config/containers ] && ls -lR .config/containers
-        podman images -a
-        du -hd 2 ~/.local/share/containers/storage/
+        # Note that .config/containers does not exist with Podman 3.4.4, even though it just ran.
 
     - name: Upload build results
       uses: actions/upload-artifact@v3
