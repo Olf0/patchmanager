@@ -52,6 +52,7 @@ jobs:
     - name: Restore cache
       uses: actions/cache/restore@v3
       with:
+        # path: ~/.local/share/containers/storage/*-layers
         path: ~/.local/share/containers/storage/
         key: docker-CoderusSailfishosPlatformSDK-${{ env.RELEASE }}
         # Will likely create an avalanche effect, as the images and layers accumulate.
@@ -61,6 +62,8 @@ jobs:
 
     - name: Build ${{ env.ARCH }} on ${{ env.RELEASE }}
       run: |
+        sudo apt-get -qq update
+        sudo apt-get -qq install -y uidmap
         set -x
         mkdir -p output/$RELEASE/$ARCH
         podman run --rm -v $PWD:/share coderus/sailfishos-platform-sdk:$RELEASE /bin/sh -xc '
@@ -69,6 +72,10 @@ jobs:
            cp -r /share/. .
            mb2 -t SailfishOS-$1-$2 build -d
            sudo cp -r RPMS/. /share/output/$1/$2/' sh_mb2 $RELEASE $ARCH
+        cat ~/.config/containers/storage.conf
+        podman images -a
+        du -hd 2 ~/.local/share/containers/storage/
+        podman info
 
     - name: Upload build results
       uses: actions/upload-artifact@v3
