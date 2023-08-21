@@ -59,6 +59,7 @@ jobs:
            sudo cp -r RPMS/. /share/output/$1/$2/' sh_mb2 $RELEASE $ARCH
         #sudo ls -lR /var/lib/docker
         sudo chown -PRc "$(whoami)" /var/lib/docker
+        # No, there is no way via chown or chmod to make the Save cache Action work.
 
     - name: Save cache
       uses: actions/cache/save@v3
