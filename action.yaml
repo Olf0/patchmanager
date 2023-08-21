@@ -10,9 +10,8 @@ inputs:
     description: 'Image at DockerHub: image[:tag][@digest]'
     required: true
     type: string
-outputs:
-    ${{ steps.cache-restore.hit }}
-
+# outputs:
+  
 runs:
   using: composite
   steps:
@@ -44,6 +43,7 @@ runs:
     - name: Make image available for docker
       run: |
         tar -cC /tmp/${{ input.image_name }} . | docker load
+        # For Podman use `podman load --quiet` to suppress progress bar
 
 ##########################################################
 
