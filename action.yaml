@@ -11,17 +11,16 @@ inputs:
     required: true
     type: string
 outputs:
-   
-
-
+    ${{ steps.cache-restore.hit }}
 
 runs:
   using: composite
   steps:
     - name: Check if the image is already cached.
       id: cache-restore
-      uses: cache-restore@v3
+      uses: actions/cache/restore@v3
       with:
+        path: /tmp/${{ input.image_name }}
         key: docker.io-${{ input.image_name }}
 
     - name: Download image, if not available in cache.
@@ -30,12 +29,24 @@ runs:
         bash -c "$(
           curl --fail --silent --show-error --location \
           https://raw.githubusercontent.com/moby/moby/v24.0.5/contrib/download-frozen-image-v2.sh
-        )" dwnld-frzn-img-v2 $(mktemp -dt ${{ input.image_name }}.XXX) ${{ input.image_name }}
+        )" dwnld-frzn-img-v2 /tmp/${{ input.image_name }} ${{ input.image_name }}
         # See https://github.com/moby/moby/blob/v24.0.5/contrib/download-frozen-image-v2.sh
+        # Script creates the cache directory, if not extant (by line 30).
       shell: bash
 
+    - name: Save image in cache.
+      if: ${{ steps.cache-restore.hit == false }}
+      uses: actions/cache/save@v3
+      with:
+        path: /tmp/${{ input.image_name }}
+        key: docker.io-${{ input.image_name }}
 
-      
+    - name: Make image available for docker
+      run: |
+        tar -cC /tmp/${{ input.image_name }} . | docker load
+
+##########################################################
+
       run: |
         in_use='false'
         if docker context ls --format '{{ .Name }}' | grep --quiet '^rootless$'
@@ -72,14 +83,3 @@ runs:
           return 1
         }
 
-
-
-
-
-
-
-        download-frozen-image_output="$(
-          curl --fail --silent --show-error --location \
-          https://raw.githubusercontent.com/moby/moby/v24.0.5/contrib/download-frozen-image-v2.sh |
-          bash
-        )"
