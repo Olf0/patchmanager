@@ -1,0 +1,85 @@
+name: Cache Docker Images
+author: olf (Olf0)
+description: Downloads and caches a Docker image from DockerHub (docker.io)
+branding:
+  icon: lock
+  color: blue
+
+inputs:
+  IMAGE_NAME:
+    description: 'Image at DockerHub: image[:tag][@digest]'
+    required: true
+    type: string
+outputs:
+   
+
+
+
+runs:
+  using: composite
+  steps:
+    - name: Check if the image is already cached.
+      id: cache-restore
+      uses: cache-restore@v3
+      with:
+        key: docker.io-${{ input.image_name }}
+
+    - name: Download image, if not available in cache.
+      if: ${{ steps.cache-restore.hit == false }}
+      run: |
+        bash -c "$(
+          curl --fail --silent --show-error --location \
+          https://raw.githubusercontent.com/moby/moby/v24.0.5/contrib/download-frozen-image-v2.sh
+        )" dwnld-frzn-img-v2 $(mktemp -dt ${{ input.image_name }}.XXX) ${{ input.image_name }}
+        # See https://github.com/moby/moby/blob/v24.0.5/contrib/download-frozen-image-v2.sh
+      shell: bash
+
+
+      
+      run: |
+        in_use='false'
+        if docker context ls --format '{{ .Name }}' | grep --quiet '^rootless$'
+        then
+          installed='true'
+          if [[ "$(docker info --format '{{ .ClientInfo.Context }}')" == 'rootless' ]]
+          then
+            in_use='true'
+          fi
+        else
+          installed='false'
+        fi
+        echo "INSTALLED=$installed" >>"$GITHUB_OUTPUT"
+        echo "IN_USE=$in_use" >>"$GITHUB_OUTPUT"
+      shell: bash
+    - name: Stop rootful Docker daemon.
+      if: steps.rootless-docker.outputs.IN_USE != 'true'
+      run: sudo systemctl stop docker.service
+      shell: bash
+    - name: Install rootless Docker, start daemon, and wait until it's listening.
+      if: steps.rootless-docker.outputs.INSTALLED != 'true'
+      run: |
+        echo ~/bin >>"$GITHUB_PATH"
+        if [[ -z $XDG_RUNTIME_DIR ]]; then
+          XDG_RUNTIME_DIR=~/.docker/run
+          echo XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR" >>"$GITHUB_ENV"
+        fi
+        function awaitDockerd() {
+          while IFS= read -r -t 60 line; do
+            echo "$line"
+            [[ "$line" = *"API listen on $XDG_RUNTIME_DIR/docker.sock"* ]] && return
+          done
+          echo 'Timed out waiting for Docker daemon to listen.' >&2
+          return 1
+        }
+
+
+
+
+
+
+
+        download-frozen-image_output="$(
+          curl --fail --silent --show-error --location \
+          https://raw.githubusercontent.com/moby/moby/v24.0.5/contrib/download-frozen-image-v2.sh |
+          bash
+        )"
