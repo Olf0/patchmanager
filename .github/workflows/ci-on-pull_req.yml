@@ -65,7 +65,7 @@ jobs:
     - name: Restore cache
       uses: actions/cache/restore@v3
       with:
-        path: ~/.local/share/containers/storage/
+        path: ~/.local/share/containers/storage/*-layers/
         key: podman-CoderusSailfishosPlatformSDK-${{ env.RELEASE }}
         # Will likely create an avalanche effect, as various images and layers accumulate.
         #restore-keys: |
@@ -83,14 +83,14 @@ jobs:
            mb2 -t SailfishOS-$1-$2 build -d
            sudo cp -r RPMS/. /share/output/$1/$2/' sh_mb2 $RELEASE $ARCH
         # Note that .config/containers does not exist with Podman 3.4.4, even though it just ran.
-        sudo ls -lR ~/.local/share/containers
+        #sudo ls -lR ~/.local/share/containers
         #sudo chmod -Rc a+r ~/.local/share/containers/storage
-        sudo chown -PRc $me ~/.local/share/containers/storage
+        #sudo chown -PRc $me ~/.local/share/containers/storage
 
     - name: Save cache
       uses: actions/cache/save@v3
       with:
-        path: ~/.local/share/containers/storage/
+        path: ~/.local/share/containers/storage/*-layers/
         key: podman-CoderusSailfishosPlatformSDK-${{ env.RELEASE }}
 
     - name: Upload build results
