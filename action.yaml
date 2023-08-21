@@ -10,7 +10,7 @@ inputs:
     description: 'Image at DockerHub: image[:tag][@digest]'
     required: true
     type: string
-# outputs:
+#outputs:
   
 runs:
   using: composite
@@ -43,7 +43,8 @@ runs:
     - name: Make image available for docker
       run: |
         tar -cC /tmp/${{ input.image_name }} . | docker load
-        # For Podman use `podman load --quiet` to suppress progress bar
+        # For Podman use `podman load --quiet` to suppress the progress bar
+        rm -rf /tmp/${{ input.image_name }}
 
 ##########################################################
 
